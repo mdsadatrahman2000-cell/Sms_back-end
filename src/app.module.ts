@@ -10,6 +10,7 @@ import { TeachersModule } from './teachers/teachers.module';
 import { ClassesModule } from './classes/classes.module';
 import { SubjectesModule } from './subjects/subjects.module';
 import { AdminModule } from './admin/admin.module';
+import { TenantsModule } from './tenants/tenants.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AdminModule } from './admin/admin.module';
     CommonModule,
     AuthModule,
     AdminModule,
+    TenantsModule,
     StudentsModule,
     TeachersModule,
     ClassesModule,
