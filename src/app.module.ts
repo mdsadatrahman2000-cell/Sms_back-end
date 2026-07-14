@@ -14,6 +14,8 @@ import { TenantsModule } from './tenants/tenants.module';
 import { AcademicYearsModule } from './academic-years/academic-years.module';
 import { GuardiansModule } from './guardians/guardians.module';
 import { UploadModule } from './upload/upload.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { UploadModule } from './upload/upload.module';
     AcademicYearsModule,
     GuardiansModule,
     UploadModule,
+    DashboardModule,
+    RolesModule,
     StudentsModule,
     TeachersModule,
     ClassesModule,
