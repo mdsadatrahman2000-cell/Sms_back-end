@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { TransportService } from './transport.service';
 import { CreateRouteDto, AssignStudentDto } from './dto/transport.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -23,15 +23,33 @@ export class TransportController {
     return this.transportService.getRoutes(tenantId);
   }
 
+  @Get('routes/:id')
+  @Roles('school_admin', 'transport_manager')
+  getRoute(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.transportService.getRoute(tenantId, id);
+  }
+
+  @Patch('routes/:id')
+  @Roles('school_admin', 'transport_manager')
+  updateRoute(@TenantId() tenantId: string, @Param('id') id: string, @Body() data: any) {
+    return this.transportService.updateRoute(tenantId, id, data);
+  }
+
+  @Delete('routes/:id')
+  @Roles('school_admin', 'transport_manager')
+  deleteRoute(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.transportService.deleteRoute(tenantId, id);
+  }
+
   @Post('assign')
   @Roles('school_admin', 'transport_manager')
   assignStudent(@TenantId() tenantId: string, @Body() dto: AssignStudentDto) {
     return this.transportService.assignStudent(tenantId, dto);
   }
 
-  @Get('routes/:routeId/students')
+  @Delete('unassign/:studentId')
   @Roles('school_admin', 'transport_manager')
-  getRouteStudents(@TenantId() tenantId: string, @Param('routeId') routeId: string) {
-    return this.transportService.getRouteStudents(tenantId, routeId);
+  unassignStudent(@TenantId() tenantId: string, @Param('studentId') studentId: string) {
+    return this.transportService.unassignStudent(tenantId, studentId);
   }
 }

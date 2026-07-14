@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryItemDto, UpdateInventoryItemDto, StockMovementDto } from './dto/inventory.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,8 +19,26 @@ export class InventoryController {
 
   @Get()
   @Roles('school_admin', 'inventory_manager', 'teacher')
-  getItems(@TenantId() tenantId: string, @Query('category') category?: string, @Query('search') search?: string) {
-    return this.inventoryService.getItems(tenantId, category, search);
+  getItems(@TenantId() tenantId: string, @Query('page') page?: string, @Query('limit') limit?: string, @Query('category') category?: string, @Query('search') search?: string) {
+    return this.inventoryService.getItems(tenantId, page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20, category, search);
+  }
+
+  @Get('categories')
+  @Roles('school_admin', 'inventory_manager')
+  getCategories(@TenantId() tenantId: string) {
+    return this.inventoryService.getCategories(tenantId);
+  }
+
+  @Get('low-stock')
+  @Roles('school_admin', 'inventory_manager')
+  getLowStock(@TenantId() tenantId: string) {
+    return this.inventoryService.getLowStock(tenantId);
+  }
+
+  @Get(':id')
+  @Roles('school_admin', 'inventory_manager')
+  getItem(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.inventoryService.getItem(tenantId, id);
   }
 
   @Patch(':id')
@@ -29,15 +47,15 @@ export class InventoryController {
     return this.inventoryService.updateItem(tenantId, id, dto);
   }
 
+  @Delete(':id')
+  @Roles('school_admin', 'inventory_manager')
+  deleteItem(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.inventoryService.deleteItem(tenantId, id);
+  }
+
   @Post(':id/movements')
   @Roles('school_admin', 'inventory_manager')
   recordMovement(@TenantId() tenantId: string, @Param('id') id: string, @Body() dto: StockMovementDto) {
     return this.inventoryService.recordMovement(tenantId, id, dto);
-  }
-
-  @Get('low-stock')
-  @Roles('school_admin', 'inventory_manager')
-  getLowStock(@TenantId() tenantId: string) {
-    return this.inventoryService.getLowStock(tenantId);
   }
 }
