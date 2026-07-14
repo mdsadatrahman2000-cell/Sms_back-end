@@ -152,4 +152,8 @@ export class FeesService {
       pending,
     };
   }
+
+  async deleteInvoice(tenantId: string, invoiceId: string) {
+    return this.prisma.invoice.deleteMany({ where: { id: invoiceId, tenantId } });
+  }
 }

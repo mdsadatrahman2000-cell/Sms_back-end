@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { FeesService } from './fees.service';
 import { CreateFeeStructureDto, CreateInvoiceDto, RecordPaymentDto } from './dto/fee.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -45,5 +45,11 @@ export class FeesController {
   @Roles('school_admin', 'accountant')
   getRevenue(@TenantId() tenantId: string, @Query('academicYearId') academicYearId?: string) {
     return this.feesService.getRevenue(tenantId, academicYearId);
+  }
+
+  @Delete('invoices/:id')
+  @Roles('school_admin', 'accountant')
+  deleteInvoice(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.feesService.deleteInvoice(tenantId, id);
   }
 }
