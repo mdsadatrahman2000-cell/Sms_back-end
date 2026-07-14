@@ -163,7 +163,7 @@ export class AdminService {
     const hashedPassword = await bcrypt.hash('password123', 12);
     const adminUser = await this.prisma.user.upsert({
       where: { tenantId_email: { tenantId: actualTenantId, email: 'admin@school.com' } },
-      update: {},
+      update: { passwordHash: hashedPassword, refreshTokenHash: null },
       create: {
         tenantId: actualTenantId,
         email: 'admin@school.com',

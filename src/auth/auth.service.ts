@@ -14,14 +14,6 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: dto.email, deletedAt: null },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('Email already registered');
-    }
-
     // Find or create default tenant
     let tenant = await this.prisma.tenant.findFirst({
       where: { slug: 'demo-school' },
@@ -39,6 +31,15 @@ export class AuthService {
           plan: 'free',
         },
       });
+    }
+
+    // Check for existing user within this tenant
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: dto.email, tenantId: tenant.id, deletedAt: null },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);
@@ -116,7 +117,12 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      if (!user || !user.passwordHash) {
+      if (!user || !user.refreshTokenHash) {
+        throw new UnauthorizedException();
+      }
+
+      const isRefreshValid = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+      if (!isRefreshValid) {
         throw new UnauthorizedException();
       }
 
@@ -137,7 +143,7 @@ export class AuthService {
   async logout(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { passwordHash: null },
+      data: { refreshTokenHash: null },
     });
   }
 
@@ -167,7 +173,7 @@ export class AuthService {
     const hashedToken = await bcrypt.hash(refreshToken, 12);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { passwordHash: hashedToken },
+      data: { refreshTokenHash: hashedToken },
     });
   }
 }
