@@ -77,10 +77,7 @@ export class AdminService {
   async seed() {
     this.logger.log('Starting database seed...');
 
-    const existingRoles = await this.prisma.role.count();
-    if (existingRoles > 0) {
-      return { message: 'Database already seeded', skipped: true };
-    }
+    // Seed is idempotent via upserts, always run
 
     // 1. Create tenant
     const tenant = await this.prisma.tenant.upsert({
