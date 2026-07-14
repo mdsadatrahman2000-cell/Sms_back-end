@@ -16,6 +16,15 @@ import { GuardiansModule } from './guardians/guardians.module';
 import { UploadModule } from './upload/upload.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RolesModule } from './roles/roles.module';
+import { AttendancesModule } from './attendances/attendances.module';
+import { ExamsModule } from './exams/exams.module';
+import { FeesModule } from './fees/fees.module';
+import { HrModule } from './hr/hr.module';
+import { LibraryModule } from './library/library.module';
+import { TransportModule } from './transport/transport.module';
+import { HostelModule } from './hostel/hostel.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -34,6 +43,15 @@ import { RolesModule } from './roles/roles.module';
     TeachersModule,
     ClassesModule,
     SubjectesModule,
+    AttendancesModule,
+    ExamsModule,
+    FeesModule,
+    HrModule,
+    LibraryModule,
+    TransportModule,
+    HostelModule,
+    InventoryModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
