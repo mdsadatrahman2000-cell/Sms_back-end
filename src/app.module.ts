@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -31,10 +34,15 @@ import { ReportsModule } from './reports/reports.module';
 import { LeavesModule } from './leaves/leaves.module';
 import { AdmissionsModule } from './admissions/admissions.module';
 import { ScholarshipsModule } from './scholarships/scholarships.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      { name: 'auth', ttl: 900000, limit: 5 },
+      { name: 'default', ttl: 60000, limit: 100 },
+    ]),
     PrismaModule,
     CommonModule,
     AuthModule,
@@ -64,8 +72,12 @@ import { ScholarshipsModule } from './scholarships/scholarships.module';
     LeavesModule,
     AdmissionsModule,
     ScholarshipsModule,
+    AuditModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
