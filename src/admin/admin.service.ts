@@ -77,8 +77,8 @@ export class AdminService {
   async seed() {
     this.logger.log('Starting database seed...');
 
-    const existingUser = await this.prisma.user.findFirst();
-    if (existingUser) {
+    const existingRoles = await this.prisma.role.count();
+    if (existingRoles > 0) {
       return { message: 'Database already seeded', skipped: true };
     }
 
