@@ -11,6 +11,8 @@ import { ClassesModule } from './classes/classes.module';
 import { SubjectesModule } from './subjects/subjects.module';
 import { AdminModule } from './admin/admin.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { AcademicYearsModule } from './academic-years/academic-years.module';
+import { GuardiansModule } from './guardians/guardians.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TenantsModule } from './tenants/tenants.module';
     AuthModule,
     AdminModule,
     TenantsModule,
+    AcademicYearsModule,
+    GuardiansModule,
     StudentsModule,
     TeachersModule,
     ClassesModule,
