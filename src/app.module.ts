@@ -26,6 +26,7 @@ import { HostelModule } from './hostel/hostel.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { LmsModule } from './lms/lms.module';
+import { TimetableModule } from './timetable/timetable.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { LmsModule } from './lms/lms.module';
     InventoryModule,
     NotificationsModule,
     LmsModule,
+    TimetableModule,
   ],
   controllers: [AppController],
   providers: [AppService],
