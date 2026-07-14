@@ -27,6 +27,10 @@ import { InventoryModule } from './inventory/inventory.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { LmsModule } from './lms/lms.module';
 import { TimetableModule } from './timetable/timetable.module';
+import { ReportsModule } from './reports/reports.module';
+import { LeavesModule } from './leaves/leaves.module';
+import { AdmissionsModule } from './admissions/admissions.module';
+import { ScholarshipsModule } from './scholarships/scholarships.module';
 
 @Module({
   imports: [
@@ -56,6 +60,10 @@ import { TimetableModule } from './timetable/timetable.module';
     NotificationsModule,
     LmsModule,
     TimetableModule,
+    ReportsModule,
+    LeavesModule,
+    AdmissionsModule,
+    ScholarshipsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

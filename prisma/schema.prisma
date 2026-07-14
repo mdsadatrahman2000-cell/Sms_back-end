@@ -62,6 +62,9 @@ model Tenant {
   inventoryItems         InventoryItem[]
   stockMovements         StockMovement[]
   timetableSlots         TimetableSlot[]
+  leaveRequests          LeaveRequest[]
+  admissions             Admission[]
+  scholarships           Scholarship[]
 
   @@map("tenants")
 }
@@ -101,6 +104,7 @@ model User {
   teachingAssignments Assignment[]
   uploadedDocuments Document[]
   timetableSlots  TimetableSlot[]
+  leaveRequests   LeaveRequest[]
 
   @@unique([tenantId, email])
   @@index([tenantId, email])
@@ -288,6 +292,7 @@ model Student {
   bookIssues      BookIssue[]
   transport       StudentTransport?
   hostelAllocation HostelAllocation?
+  scholarships     StudentScholarship[]
 
   @@unique([tenantId, admissionNumber])
   @@index([tenantId, classId])
@@ -927,4 +932,94 @@ model TimetableSlot {
 
   @@unique([tenantId, classId, dayOfWeek, startTime])
   @@map("timetable_slots")
+}
+
+// ============================================================
+// LEAVE MANAGEMENT
+// ============================================================
+
+model LeaveRequest {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  reason      String
+  type        String   @default("personal")
+  status      String   @default("pending")
+  approvedBy  String?  @db.Uuid
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("leave_requests")
+}
+
+// ============================================================
+// ADMISSIONS
+// ============================================================
+
+model Admission {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @db.Uuid
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentName     String
+  parentName      String
+  email           String
+  phone           String
+  dateOfBirth     DateTime @db.Date
+  gradeApplying   String
+  previousSchool  String?
+  notes           String?
+  status          String   @default("applied")
+  documents       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("admissions")
+}
+
+// ============================================================
+// SCHOLARSHIPS
+// ============================================================
+
+model Scholarship {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @db.Uuid
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?
+  amount        Float
+  type          String   @default("fixed")
+  maxRecipients Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recipients StudentScholarship[]
+
+  @@index([tenantId])
+  @@map("scholarships")
+}
+
+model StudentScholarship {
+  id            String      @id @default(uuid()) @db.Uuid
+  tenantId      String      @db.Uuid
+  scholarshipId String      @db.Uuid
+  scholarship   Scholarship @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
+  studentId     String      @db.Uuid
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  awardedAt     DateTime    @default(now())
+  notes         String?
+
+  @@unique([scholarshipId, studentId])
+  @@index([tenantId])
+  @@index([studentId])
+  @@map("student_scholarships")
 }
