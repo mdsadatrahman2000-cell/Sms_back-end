@@ -97,7 +97,8 @@ export class AdminService {
         plan: 'free',
       },
     });
-    this.logger.log(`Tenant: ${tenant.name}`);
+    const actualTenantId = tenant.id;
+    this.logger.log(`Tenant: ${tenant.name} (${actualTenantId})`);
 
     // 2. Create permissions
     const permMap: Record<string, string> = {};
@@ -116,14 +117,14 @@ export class AdminService {
     const roleMap: Record<string, string> = {};
     for (const role of roles) {
       const existing = await this.prisma.role.findFirst({
-        where: { tenantId: TENANT_ID, name: role.name },
+        where: { tenantId: actualTenantId, name: role.name },
       });
       if (existing) {
         roleMap[role.name] = existing.id;
       } else {
         const created = await this.prisma.role.create({
           data: {
-            tenantId: TENANT_ID,
+            tenantId: actualTenantId,
             name: role.name,
             description: role.description,
             isSystem: role.isSystem,
@@ -161,10 +162,10 @@ export class AdminService {
     // 6. Create admin user
     const hashedPassword = await bcrypt.hash('password123', 12);
     const adminUser = await this.prisma.user.upsert({
-      where: { tenantId_email: { tenantId: TENANT_ID, email: 'admin@school.com' } },
+      where: { tenantId_email: { tenantId: actualTenantId, email: 'admin@school.com' } },
       update: {},
       create: {
-        tenantId: TENANT_ID,
+        tenantId: actualTenantId,
         email: 'admin@school.com',
         passwordHash: hashedPassword,
         firstName: 'Admin',
@@ -177,18 +178,18 @@ export class AdminService {
 
     // 7. Assign super_admin role to admin
     await this.prisma.userRole.upsert({
-      where: { tenantId_userId_roleId: { tenantId: TENANT_ID, userId: adminUser.id, roleId: superAdminRoleId } },
+      where: { tenantId_userId_roleId: { tenantId: actualTenantId, userId: adminUser.id, roleId: superAdminRoleId } },
       update: {},
-      create: { tenantId: TENANT_ID, userId: adminUser.id, roleId: superAdminRoleId },
+      create: { tenantId: actualTenantId, userId: adminUser.id, roleId: superAdminRoleId },
     });
     this.logger.log('super_admin role assigned');
 
     // 8. Create academic year
     const academicYear = await this.prisma.academicYear.upsert({
-      where: { tenantId_name: { tenantId: TENANT_ID, name: '2026-2027' } },
+      where: { tenantId_name: { tenantId: actualTenantId, name: '2026-2027' } },
       update: {},
       create: {
-        tenantId: TENANT_ID,
+        tenantId: actualTenantId,
         name: '2026-2027',
         startDate: new Date('2026-04-01'),
         endDate: new Date('2027-03-31'),
@@ -209,7 +210,7 @@ export class AdminService {
       await this.prisma.class.upsert({
         where: {
           tenantId_name_section_academicYearId: {
-            tenantId: TENANT_ID,
+            tenantId: actualTenantId,
             name: cls.name,
             section: cls.section,
             academicYearId: academicYear.id,
@@ -217,7 +218,7 @@ export class AdminService {
         },
         update: {},
         create: {
-          tenantId: TENANT_ID,
+          tenantId: actualTenantId,
           name: cls.name,
           gradeLevel: cls.gradeLevel,
           section: cls.section,
@@ -240,10 +241,10 @@ export class AdminService {
 
     for (const sub of subjectsData) {
       await this.prisma.subject.upsert({
-        where: { tenantId_code: { tenantId: TENANT_ID, code: sub.code } },
+        where: { tenantId_code: { tenantId: actualTenantId, code: sub.code } },
         update: {},
         create: {
-          tenantId: TENANT_ID,
+          tenantId: actualTenantId,
           name: sub.name,
           code: sub.code,
         },
