@@ -34,6 +34,13 @@ import { ReportsModule } from './reports/reports.module';
 import { LeavesModule } from './leaves/leaves.module';
 import { AdmissionsModule } from './admissions/admissions.module';
 import { ScholarshipsModule } from './scholarships/scholarships.module';
+import { DepartmentsModule } from './departments/departments.module';
+import { LoginHistoryModule } from './login-history/login-history.module';
+import { ExpensesModule } from './expenses/expenses.module';
+import { EmailModule } from './email/email.module';
+import { GdprModule } from './gdpr/gdpr.module';
+import { CoppaModule } from './coppa/coppa.module';
+import { PublicModule } from './public/public.module';
 import { AuditModule } from './audit/audit.module';
 
 @Module({
@@ -72,6 +79,13 @@ import { AuditModule } from './audit/audit.module';
     LeavesModule,
     AdmissionsModule,
     ScholarshipsModule,
+    DepartmentsModule,
+    LoginHistoryModule,
+    ExpensesModule,
+    EmailModule,
+    GdprModule,
+    CoppaModule,
+    PublicModule,
     AuditModule,
   ],
   controllers: [AppController],

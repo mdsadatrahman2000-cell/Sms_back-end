@@ -65,6 +65,12 @@ model Tenant {
   leaveRequests          LeaveRequest[]
   admissions             Admission[]
   scholarships           Scholarship[]
+  departments            Department[]
+  expenseCategories      ExpenseCategory[]
+  expenses               Expense[]
+  budgets                Budget[]
+  loginHistory           LoginHistory[]
+  parentalConsents       ParentalConsent[]
 
   @@map("tenants")
 }
@@ -107,6 +113,8 @@ model User {
   uploadedDocuments Document[]
   timetableSlots  TimetableSlot[]
   leaveRequests   LeaveRequest[]
+  loginHistory    LoginHistory[]
+  parentalConsents ParentalConsent[] @relation("parentConsent")
 
   @@unique([tenantId, email])
   @@index([tenantId, email])
@@ -295,6 +303,7 @@ model Student {
   transport       StudentTransport?
   hostelAllocation HostelAllocation?
   scholarships     StudentScholarship[]
+  parentalConsents ParentalConsent[]
 
   @@unique([tenantId, admissionNumber])
   @@index([tenantId, classId])
@@ -1024,4 +1033,155 @@ model StudentScholarship {
   @@index([tenantId])
   @@index([studentId])
   @@map("student_scholarships")
+}
+
+// ============================================================
+// DEPARTMENT TABLES
+// ============================================================
+
+model Department {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  code        String
+  description String?
+  headUserId  String?  @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("departments")
+}
+
+// ============================================================
+// EXPENSE / BUDGET TABLES
+// ============================================================
+
+model ExpenseCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  expenses    Expense[]
+  budgets     Budget[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id              String          @id @default(uuid()) @db.Uuid
+  tenantId        String          @db.Uuid
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId      String          @db.Uuid
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  amount          Decimal         @db.Decimal(12, 2)
+  expenseDate     DateTime        @map("expense_date")
+  paymentMethod   String          @default("cash") @map("payment_method")
+  referenceNumber String?         @map("reference_number")
+  approvedBy      String?         @db.Uuid
+  approvedAt      DateTime?       @map("approved_at")
+  status          String          @default("pending")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
+
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([expenseDate])
+  @@map("expenses")
+}
+
+model Budget {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @db.Uuid
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId String   @db.Uuid
+  category   ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  amount     Decimal  @db.Decimal(12, 2)
+  startDate  DateTime @map("start_date")
+  endDate    DateTime @map("end_date")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, categoryId, startDate])
+  @@index([tenantId])
+  @@map("budgets")
+}
+
+// ============================================================
+// LOGIN HISTORY TABLE
+// ============================================================
+
+model LoginHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @db.Uuid
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  device    String?
+  location  String?
+  success   Boolean  @default(true)
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("login_history")
+}
+
+// ============================================================
+// GDPR / COPPA TABLES
+// ============================================================
+
+model ParentalConsent {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @db.Uuid
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  studentId    String   @db.Uuid
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentId     String   @db.Uuid
+  parent       User     @relation("parentConsent", fields: [parentId], references: [id], onDelete: Cascade)
+  consentType  String   @map("consent_type")
+  granted      Boolean  @default(false)
+  grantedAt    DateTime? @map("granted_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([studentId, consentType])
+  @@index([tenantId])
+  @@index([studentId])
+  @@map("parental_consents")
+}
+
+// ============================================================
+// IDEMPOTENCY KEY TABLE
+// ============================================================
+
+model IdempotencyKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  key        String    @unique
+  userId     String?   @db.Uuid
+  response   Json?
+  statusCode Int?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
 }

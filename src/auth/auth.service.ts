@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { LoginHistoryService } from '../login-history/login-history.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private loginHistoryService: LoginHistoryService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -64,12 +66,28 @@ export class AuthService {
         updateData.failedLoginAttempts = 0;
       }
       await this.prisma.user.update({ where: { id: user.id }, data: updateData });
+      await this.loginHistoryService.log({
+        tenantId: user.tenantId,
+        userId: user.id,
+        ipAddress: (global as any).__request_ip,
+        userAgent: (global as any).__user_agent,
+        success: false,
+        reason: 'Invalid password',
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     await this.prisma.user.update({
       where: { id: user.id },
       data: { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
+    });
+
+    await this.loginHistoryService.log({
+      tenantId: user.tenantId,
+      userId: user.id,
+      ipAddress: (global as any).__request_ip,
+      userAgent: (global as any).__user_agent,
+      success: true,
     });
 
     const roles = user.userRoles.map((ur) => ur.role.name);

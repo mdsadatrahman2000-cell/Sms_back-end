@@ -210,7 +210,78 @@ async function main() {
   }
   console.log(`${classes.length} classes created`);
 
-  // 10. Create some subjects
+  // 10. Create demo users
+  const teacherRole = createdRoles.find(r => r.name === 'teacher');
+  const studentRole = createdRoles.find(r => r.name === 'student');
+  const parentRole = createdRoles.find(r => r.name === 'parent');
+
+  const demoTeacher = await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: TENANT_ID, email: 'teacher@school.com' } },
+    update: {},
+    create: {
+      tenantId: TENANT_ID,
+      email: 'teacher@school.com',
+      passwordHash: hashedPassword,
+      firstName: 'John',
+      lastName: 'Smith',
+      emailVerified: true,
+      status: 'active',
+    },
+  });
+  if (teacherRole) {
+    await prisma.userRole.upsert({
+      where: { tenantId_userId_roleId: { tenantId: TENANT_ID, userId: demoTeacher.id, roleId: teacherRole.id } },
+      update: {},
+      create: { tenantId: TENANT_ID, userId: demoTeacher.id, roleId: teacherRole.id },
+    });
+  }
+  console.log(`Demo teacher created: ${demoTeacher.email}`);
+
+  const demoParent = await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: TENANT_ID, email: 'parent@school.com' } },
+    update: {},
+    create: {
+      tenantId: TENANT_ID,
+      email: 'parent@school.com',
+      passwordHash: hashedPassword,
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      emailVerified: true,
+      status: 'active',
+    },
+  });
+  if (parentRole) {
+    await prisma.userRole.upsert({
+      where: { tenantId_userId_roleId: { tenantId: TENANT_ID, userId: demoParent.id, roleId: parentRole.id } },
+      update: {},
+      create: { tenantId: TENANT_ID, userId: demoParent.id, roleId: parentRole.id },
+    });
+  }
+  console.log(`Demo parent created: ${demoParent.email}`);
+
+  const demoStudent = await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: TENANT_ID, email: 'student@school.com' } },
+    update: {},
+    create: {
+      tenantId: TENANT_ID,
+      email: 'student@school.com',
+      passwordHash: hashedPassword,
+      firstName: 'Emily',
+      lastName: 'Johnson',
+      emailVerified: true,
+      status: 'active',
+    },
+  });
+  if (studentRole) {
+    await prisma.userRole.upsert({
+      where: { tenantId_userId_roleId: { tenantId: TENANT_ID, userId: demoStudent.id, roleId: studentRole.id } },
+      update: {},
+      create: { tenantId: TENANT_ID, userId: demoStudent.id, roleId: studentRole.id },
+    });
+  }
+  console.log(`Demo student created: ${demoStudent.email}`);
+
+  // 11. Create some subjects
   const subjects = [
     { name: 'Mathematics', code: 'MATH' },
     { name: 'English', code: 'ENG' },
