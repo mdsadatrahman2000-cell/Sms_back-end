@@ -51,6 +51,7 @@ model Tenant {
   auditLogs              AuditLog[]
   userRoles              UserRole[]
   classSubjects          ClassSubject[]
+  documents              Document[]
 
   @@map("tenants")
 }
@@ -88,6 +89,7 @@ model User {
   classSubjects   ClassSubject[]
   teachingCourses Course[]
   teachingAssignments Assignment[]
+  uploadedDocuments Document[]
 
   @@unique([tenantId, email])
   @@index([tenantId, email])
@@ -659,4 +661,30 @@ model AuditLog {
   @@index([tenantId, createdAt])
   @@index([tenantId, userId])
   @@map("audit_logs")
+}
+
+// ============================================================
+// FILE UPLOAD TABLES
+// ============================================================
+
+model Document {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  uploaderId   String   @map("uploader_id") @db.Uuid
+  entityType   String   @map("entity_type")
+  entityId     String?  @map("entity_id") @db.Uuid
+  fileName     String   @map("file_name")
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  fileSize     Int      @map("file_size")
+  storageKey   String   @map("storage_key")
+  category     String   @default("general")
+  description  String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploader User   @relation(fields: [uploaderId], references: [id])
+
+  @@index([tenantId, entityType, entityId])
+  @@map("documents")
 }

@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { AcademicYearsModule } from './academic-years/academic-years.module';
 import { GuardiansModule } from './guardians/guardians.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { GuardiansModule } from './guardians/guardians.module';
     TenantsModule,
     AcademicYearsModule,
     GuardiansModule,
+    UploadModule,
     StudentsModule,
     TeachersModule,
     ClassesModule,
