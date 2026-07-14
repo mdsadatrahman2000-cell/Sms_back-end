@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MulterFile } from './multer-file.interface';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,7 +20,7 @@ export class UploadService {
   async upload(
     tenantId: string,
     uploaderId: string,
-    file: Express.Multer.File,
+    file: MulterFile,
     entityType: string,
     entityId?: string,
     category?: string,

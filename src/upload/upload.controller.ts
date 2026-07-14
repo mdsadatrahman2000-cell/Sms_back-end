@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
 import { UploadService } from './upload.service';
+import type { MulterFile } from './multer-file.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -32,7 +33,7 @@ export class UploadController {
   async upload(
     @TenantId() tenantId: string,
     @CurrentUser() user: any,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
     @Body('entityType') entityType: string,
     @Body('entityId') entityId?: string,
     @Body('category') category?: string,
