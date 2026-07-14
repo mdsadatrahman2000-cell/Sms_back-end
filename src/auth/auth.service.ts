@@ -22,6 +22,25 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
+    // Find or create default tenant
+    let tenant = await this.prisma.tenant.findFirst({
+      where: { slug: 'demo-school' },
+    });
+
+    if (!tenant) {
+      tenant = await this.prisma.tenant.create({
+        data: {
+          name: 'Demo School',
+          slug: 'demo-school',
+          subdomain: 'demo',
+          timezone: 'UTC',
+          currency: 'USD',
+          language: 'en',
+          plan: 'free',
+        },
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(dto.password, 12);
 
     const user = await this.prisma.user.create({
@@ -31,11 +50,26 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         phone: dto.phone,
-        tenantId: '00000000-0000-0000-0000-000000000000',
+        tenantId: tenant.id,
       },
     });
 
-    const tokens = await this.generateTokens(user.id, user.email, user.tenantId, []);
+    // Assign student role by default
+    const studentRole = await this.prisma.role.findFirst({
+      where: { tenantId: tenant.id, name: 'student' },
+    });
+
+    if (studentRole) {
+      await this.prisma.userRole.create({
+        data: {
+          tenantId: tenant.id,
+          userId: user.id,
+          roleId: studentRole.id,
+        },
+      });
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, user.tenantId, ['student']);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
